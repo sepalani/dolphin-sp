@@ -24,6 +24,7 @@
 #include "Common/IniFile.h"
 #include "Common/Logging/ConsoleListener.h"
 #include "Common/Logging/LogManager.h"
+#include "Common/MsgHandler.h"
 #include "DolphinWX/Debugger/DebuggerUIUtil.h"
 #include "DolphinWX/Frame.h"
 #include "DolphinWX/LogWindow.h"
@@ -323,5 +324,10 @@ void CLogWindow::Log(LogTypes::LOG_LEVELS level, const char* text)
   if (msgQueue.size() >= MSGQUEUE_MAX_SIZE)
     msgQueue.pop();
 
-  msgQueue.emplace(static_cast<u8>(level), StrToWxStr(text));
+  // Convert from UTF-8
+  wxString encoded_message = StrToWxStr(text);
+  // Fallback to OS locale if conversion failed
+  if (*text && encoded_message.empty())
+    encoded_message = text;
+  msgQueue.emplace(static_cast<u8>(level), encoded_message);
 }
